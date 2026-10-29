@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Speed: Beat the Clock</title>
+<style>
+:root{--bg:#f3f1ff;--card:#fff;--tx:#1d2238;--mu:#667;--ac:#6c4cf5;--ac2:#ff6a3d;--ok:#1f9d63;--bad:#d64545;--ln:#e3e5ef;--gold:#f5b50a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#110f26;--card:#1d1a3a;--tx:#f1f0ff;--mu:#a29fc9;--ac:#9d86ff;--ac2:#ff8a63;--ok:#3ccf8e;--bad:#ff7070;--ln:#34305e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#110f26;--card:#1d1a3a;--tx:#f1f0ff;--mu:#a29fc9;--ac:#9d86ff;--ac2:#ff8a63;--ok:#3ccf8e;--bad:#ff7070;--ln:#34305e;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center;padding:14px;min-height:100vh}
+.wrap{width:100%;max-width:560px;position:relative}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:22px}
+h1{font-size:28px;margin:0 0 4px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:17px;margin:18px 0 8px}
+p{color:var(--mu);line-height:1.5;margin:6px 0}
+button{font:inherit;cursor:pointer}
+.go{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff;border:0;border-radius:14px;padding:15px;font-weight:700;font-size:17px;margin-top:14px;width:100%;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{transform:scale(1.03)}}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chip{background:var(--bg);border:1px solid var(--ln);border-radius:20px;padding:5px 12px;font-size:13px}
+.stats{display:flex;gap:8px;margin:14px 0}
+.stat{flex:1;background:var(--bg);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:20px}.stat small{color:var(--mu);font-size:12px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:8px}
+.clock{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.clock.low{color:var(--bad);animation:pulse .5s infinite}
+.pts{font-weight:700;color:var(--ac)}
+.bar{height:10px;background:var(--ln);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));width:100%;transition:width 1s linear}
+.combo{display:inline-block;background:var(--ac2);color:#fff;border-radius:10px;padding:2px 10px;font-weight:700;font-size:13px;min-height:22px}
+.gold{border:2px solid var(--gold)!important;box-shadow:0 0 18px color-mix(in srgb,var(--gold) 50%,transparent)}
+.tag{color:var(--gold);font-weight:700;font-size:13px}
+.q{font-size:19px;font-weight:600;margin:8px 0 14px;line-height:1.35}
+.opt{display:block;width:100%;text-align:left;background:transparent;color:var(--tx);border:2px solid var(--ln);border-radius:12px;padding:12px 14px;margin-bottom:9px;transition:transform .1s}
+.opt:hover:not(:disabled){border-color:var(--ac);transform:translateX(3px)}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,transparent);animation:shake .3s}
+.opt.gone{opacity:.25}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pw{display:flex;gap:8px;margin-top:6px}
+.pw button{flex:1;border:2px dashed var(--ac);background:transparent;color:var(--tx);border-radius:12px;padding:8px;font-size:14px}
+.pw button:disabled{opacity:.35;border-style:solid}
+.float{position:absolute;right:20px;top:60px;font-weight:800;font-size:20px;pointer-events:none;animation:up 1s forwards}
+@keyframes up{to{transform:translateY(-40px);opacity:0}}
+.big{font-size:46px;font-weight:800;color:var(--ac);margin:2px 0}
+.lvl{display:inline-block;background:var(--ac);color:#fff;border-radius:20px;padding:4px 14px;font-weight:700;font-size:14px}
+.row{margin:10px 0}.row b{font-size:14px}.row span{float:right;font-size:14px;color:var(--mu)}
+.row .bar{margin:5px 0 0}
+.tip{border-left:4px solid var(--ac);padding:8px 12px;margin:8px 0;background:var(--bg);border-radius:0 10px 10px 0;font-size:15px;line-height:1.45}
+.tip small{display:block;color:var(--mu);margin-bottom:2px}
+.badge{display:inline-block;background:var(--gold);color:#222;border-radius:12px;padding:4px 12px;font-weight:700;font-size:13px;margin:3px 3px 3px 0}
+.hide{display:none}
+.conf{position:fixed;top:-10px;width:9px;height:14px;animation:fall 2.4s linear forwards;z-index:9}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
+#mute{position:absolute;right:0;top:-6px;background:none;border:0;font-size:18px}
+</style></head>
+<body><div class="wrap">
+<button id="mute" title="Sound">🔊</button>
+
+<div class="card" id="start">
+  <h1 id="title"></h1>
+  <p>Race the clock. Correct answers <b>add time</b>, wrong ones <b>cost time</b>. Build combos and earn XP.</p>
+  <div class="chips"><span class="chip">⏱ 2:30 start</span><span class="chip">✅ +3s</span><span class="chip">❌ −5s</span><span class="chip">🔥 combo up to x4</span><span class="chip">⭐ golden question x2</span><span class="chip">❄️ ½ power-ups</span></div>
+  <div class="stats">
+    <div class="stat"><b id="sRank">-</b><small>Rank</small></div>
+    <div class="stat"><b id="sStreak">0</b><small>Day streak 🔥</small></div>
+    <div class="stat"><b id="sBest">0</b><small>Best score</small></div>
+  </div>
+  <p id="rankNext"></p>
+  <button class="go" id="startBtn">Start the clock!</button>
+</div>
+
+<div class="card hide" id="game">
+  <div class="top"><span id="prog"></span><span class="clock" id="time"></span><span class="pts" id="pts">0 XP</span></div>
+  <div class="bar"><i id="tbar"></i></div>
+  <div class="top"><span class="combo" id="combo"></span><span class="tag" id="gtag"></span></div>
+  <div class="q" id="qtext"></div>
+  <div id="opts"></div>
+  <div class="pw"><button id="pFifty">½ 50/50</button><button id="pFreeze">❄️ Freeze 8s</button></div>
+</div>
+
+<div class="card hide" id="result">
+  <span class="lvl" id="lvl"></span>
+  <div class="big" id="score"></div>
+  <p id="xp"></p><div id="badges"></div>
+  <p id="msg"></p>
+  <h2>Your knowledge map</h2><div id="map"></div>
+  <h2>Your learning path: start here, then move up</h2><div id="tips"></div>
+  <button class="go" id="again">Beat your score!</button>
+</div>
+</div>
+<script>
+// ===== TEACHER: edit this block to change the topic =====
+var TOPIC = "Speed and Describing Movement";
+var A0="One idea: Units of speed",A1="Many ideas: Speed, distance & time",A2="Relate ideas: Distance-time graphs",A3="Extend ideas: Solving problems";
+var QS = [
+ {c:A0,q:"Which of these is NOT a unit of speed?",a:["kg/s","m/s","km/h","cm/s"],r:0},
+ {c:A0,q:"A cheetah runs at 28 m/s. What does this mean?",a:["It travels 28 metres every second","It travels 28 seconds for every metre","It travels 28 metres in total","It takes 28 seconds to start moving"],r:0},
+ {c:A1,q:"A cyclist travels 60 m in 10 s. What is the speed?",a:["6 m/s","600 m/s","70 m/s","0.17 m/s"],r:0},
+ {c:A1,q:"A car travels 150 km at a steady 50 km/h. How long does the journey take?",a:["3 hours","0.33 hours","200 hours","7500 hours"],r:0},
+ {c:A2,q:"On a distance-time graph, what does a horizontal (flat) line show?",a:["The object is stationary","The object moves at a steady speed","The object is speeding up","The object is moving backwards"],r:0},
+ {c:A2,q:"Line A is steeper than line B on the same distance-time graph. What does this show?",a:["A is moving faster than B","B is moving faster than A","They have the same speed","A is not moving"],r:0},
+ {c:A3,q:"A straight line on a distance-time graph goes from 0 m at 0 s to 40 m at 8 s. What is the speed?",a:["5 m/s","8 m/s","48 m/s","320 m/s"],r:0},
+ {c:A3,q:"A student walks 300 m in 100 s, stops for 50 s, then walks 150 m in 50 s. What is her average speed for the whole journey?",a:["2.25 m/s","3 m/s","2.5 m/s","1.5 m/s"],r:0}
+];
+var TIPS = {};
+TIPS[A0]="Learn: speed tells us how far something moves in each unit of time. Try: write 5 units (m/s, km/h, cm/s…) and match each one to something that moves. Check: explain what ‘20 m/s’ means in a full sentence.";
+TIPS[A1]="Learn: speed = distance ÷ time, and the formula triangle helps you find distance or time too. Try: solve 4 problems and always write the unit. Check: a car goes 150 km in 3 h, so what is its speed?";
+TIPS[A2]="Learn: time goes on the x-axis and distance on the y-axis. A steeper line is faster, and a flat line means stopped. Try: sketch a graph for walk, rest, run. Check: label what each part shows.";
+TIPS[A3]="Learn: read distances and times from a graph, then use speed = distance ÷ time. Average speed uses total distance ÷ total time, and rests count! Try: solve 3 multi-stage journey problems.";
+var LEVELS=[[0,"Explorer","Great starting point. We will build the key ideas step by step."],[3,"Builder","You know some key ideas. Time to connect them together."],[6,"Pro","Strong knowledge. Let’s sharpen your graph and problem-solving skills."],[8,"Master","You already meet these success criteria. Try the extension task today."]];
+var RANKS=[[0,"Rookie"],[300,"Spark"],[800,"Challenger"],[1600,"Champion"],[3000,"Legend"]];
+var START=150,GAIN=3,PENALTY=5;
+// ========================================================
+var $=function(i){return document.getElementById(i)};
+var KEY="beatclock_"+TOPIC,S={xp:0,best:0,streak:0,last:"",plays:0,badges:[]},muted=false,actx;
+try{var raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function today(d){d=d||new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function rankOf(x){var r=0;RANKS.forEach(function(k,i){if(x>=k[0])r=i});return r}
+function beep(f,d){if(muted)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();var o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d)}catch(e){}}
+$("mute").onclick=function(){muted=!muted;$("mute").textContent=muted?"🔇":"🔊"};
+$("title").textContent=TOPIC+": Beat the Clock";
+function home(){
+  var yest=new Date();yest.setDate(yest.getDate()-1);
+  var live=S.last===today()||S.last===today(yest)?S.streak:0;
+  $("sRank").textContent=RANKS[rankOf(S.xp)][1];$("sStreak").textContent=live;$("sBest").textContent=S.best;
+  var n=RANKS[rankOf(S.xp)+1];
+  $("rankNext").textContent=n?(n[0]-S.xp)+" XP to reach "+n[1]+". Play every day to keep your streak alive!":"You’re a Legend. Keep your streak going!";
+}
+function show(id){["start","game","result"].forEach(function(x){$(x).classList.toggle("hide",x!==id)})}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+var order,idx,res,left,timer,streak,best,pts,frozen,locked,gold,usedF,usedZ;
+function begin(){
+  order=shuffle(QS.map(function(_,i){return i}));
+  gold=Math.floor(Math.random()*QS.length);
+  idx=0;res=[];left=START;streak=0;best=0;pts=0;frozen=0;usedF=usedZ=false;
+  show("game");tick();$("pts").textContent="0 XP";
+  clearInterval(timer);
+  timer=setInterval(function(){if(frozen>0){frozen--;$("time").style.opacity=.5}else{$("time").style.opacity=1;left--;if(left<=10&&left>0)beep(700,.05)}tick();if(left<=0)finish()},1000);
+  ask();
+}
+function tick(){
+  var l=Math.max(left,0);
+  $("time").textContent=Math.floor(l/60)+":"+("0"+l%60).slice(-2);
+  $("time").classList.toggle("low",l<=15);
+  $("tbar").style.width=Math.min(l/START*100,100)+"%";
+}
+function mult(){return streak>=6?4:streak>=4?3:streak>=2?2:1}
+function ask(){
+  if(idx>=order.length){finish();return}
+  var qi=order[idx],q=QS[qi];locked=false;
+  var isG=qi===gold;
+  $("game").classList.toggle("gold",isG);$("gtag").textContent=isG?"⭐ GOLDEN QUESTION x2":"";
+  $("prog").textContent=(idx+1)+" / "+QS.length;
+  $("combo").textContent=mult()>1?"🔥 combo x"+mult():"";
+  $("qtext").textContent=q.q;
+  $("pFifty").disabled=usedF;$("pFreeze").disabled=usedZ;
+  var box=$("opts");box.innerHTML="";
+  shuffle(q.a.map(function(t,i){return{t:t,i:i}})).forEach(function(o){
+    var b=document.createElement("button");b.className="opt";b.textContent=o.t;b.dataset.r=o.i===q.r?1:0;
+    b.onclick=function(){pick(b,o.i===q.r,q,isG)};box.appendChild(b);
+  });
+}
+function pop(txt,col){var f=document.createElement("div");f.className="float";f.textContent=txt;f.style.color=col;$("game").appendChild(f);setTimeout(function(){f.remove()},1000)}
+function pick(btn,ok,q,isG){
+  if(locked)return;locked=true;
+  res.push({c:q.c,ok:ok});
+  if(ok){streak++;best=Math.max(best,streak);var g=100*mult()*(isG?2:1);pts+=g;left+=GAIN;btn.classList.add("ok");beep(660,.12);pop("+"+g+" XP  +"+GAIN+"s","var(--ok)")}
+  else{streak=0;left-=PENALTY;btn.classList.add("no");beep(180,.25);pop("−"+PENALTY+"s","var(--bad)")}
+  $("pts").textContent=pts+" XP";tick();
+  document.querySelectorAll(".opt").forEach(function(b){b.disabled=true;if(!ok&&b.dataset.r==="1")b.classList.add("ok")});
+  setTimeout(function(){if(left<=0)return;idx++;ask()},ok?450:1000);
+}
+$("pFifty").onclick=function(){
+  if(locked||usedF)return;usedF=true;$("pFifty").disabled=true;
+  var wrong=[].slice.call(document.querySelectorAll('.opt[data-r="0"]'));
+  shuffle(wrong).slice(0,2).forEach(function(b){b.classList.add("gone");b.disabled=true});
+};
+$("pFreeze").onclick=function(){if(locked||usedZ)return;usedZ=true;$("pFreeze").disabled=true;frozen=8;beep(900,.15)};
+function confetti(){var c=["#6c4cf5","#ff6a3d","#f5b50a","#1f9d63","#3da5ff"];for(var i=0;i<48;i++){var d=document.createElement("div");d.className="conf";d.style.left=Math.random()*100+"vw";d.style.background=c[i%5];d.style.animationDelay=Math.random()*.8+"s";document.body.appendChild(d);setTimeout(function(x){x.remove()},3400,d)}}
+function finish(){
+  clearInterval(timer);locked=true;
+  var right=res.filter(function(r){return r.ok}).length;
+  var done=res.length===QS.length&&left>0;
+  var bonus=done?Math.max(left,0)*5:0;pts+=bonus;
+  var lv=LEVELS[0];LEVELS.forEach(function(l){if(right>=l[0])lv=l});
+  // progress
+  var oldRank=rankOf(S.xp),yest=new Date();yest.setDate(yest.getDate()-1);
+  if(S.last!==today()){S.streak=S.last===today(yest)?S.streak+1:1;S.last=today()}
+  S.xp+=pts;S.plays++;var newBest=pts>S.best;if(newBest)S.best=pts;
+  var earned=[];
+  function B(id,n,c){if(c&&S.badges.indexOf(id)<0){S.badges.push(id);earned.push(n)}}
+  B("first","🎉 First Game",true);B("perfect","💯 Perfect Score",right===QS.length);
+  B("fast","⚡ Speedster",done&&left>=45);B("fire","🔥 On Fire (6 in a row)",best>=6);B("streak3","📅 3-Day Streak",S.streak>=3);
+  save();
+  $("lvl").textContent="Level: "+lv[1];
+  $("score").textContent=right+" / "+QS.length+"  ·  "+pts+" XP";
+  var nr=rankOf(S.xp);
+  $("xp").innerHTML=(newBest?"🏆 <b>New personal best!</b> ":"Best: "+S.best+" XP. ")+(nr>oldRank?"🚀 <b>Rank up: "+RANKS[nr][1]+"!</b> ":"Rank: "+RANKS[nr][1]+". ")+"🔥 "+S.streak+"-day streak."+(bonus?" Time bonus: +"+bonus+".":"");
+  $("badges").innerHTML=earned.map(function(b){return'<span class="badge">'+b+'</span>'}).join("");
+  $("msg").textContent=lv[2]+(done?"":" The clock ran out after "+res.length+" of "+QS.length+" questions.");
+  var cats={},names=[];
+  QS.forEach(function(q){if(!cats[q.c]){cats[q.c]={t:0,r:0};names.push(q.c)}cats[q.c].t++});
+  res.forEach(function(r){if(r.ok)cats[r.c].r++});
+  var m="";names.forEach(function(n){var p=Math.round(cats[n].r/cats[n].t*100);
+    m+='<div class="row"><b>'+n+'</b><span>'+cats[n].r+'/'+cats[n].t+'</span><div class="bar"><i style="width:'+p+'%;transition:none"></i></div></div>'});
+  $("map").innerHTML=m;
+  var start=-1;
+  names.forEach(function(n,i){if(start<0&&cats[n].r<cats[n].t)start=i});
+  var t="";
+  if(start<0){t='<div class="tip"><small>⭐ All four ideas secure</small>Challenge: write your own tricky speed and graph problem and test a friend.</div>'}
+  else{
+    t+='<p>Ideas build on each other. Start at the first idea you are not yet secure in, then move up one step at a time.</p>';
+    names.forEach(function(n,i){
+      if(i<start)t+='<div class="tip" style="opacity:.75"><small>✅ Secure · '+n+'</small>Well done. Use this as your toolkit for the next steps.</div>';
+      else t+='<div class="tip"'+(i===start?' style="border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)"':'')+'><small>'+(i===start?"⭐ START HERE":"THEN · STEP "+(i-start+1))+' · '+n+' ('+cats[n].r+'/'+cats[n].t+' correct)</small>'+TIPS[n]+'</div>';
+    });
+  }
+  t+='<div class="tip"><small>Study style</small>'+(!done?"The clock was your challenge. Practise quick recall with flashcards or a 60-second ‘brain dump’.":right>=6?"Your recall is strong. Learn by teaching: explain it aloud to a partner.":"Learn in short bursts: 5 minutes of reading, then close the page and write what you remember.")+'</div>';
+  $("tips").innerHTML=t;
+  show("result");
+  if(right>=6||newBest||nr>oldRank){confetti();beep(880,.2)}
+}
+$("startBtn").onclick=begin;$("again").onclick=begin;home();
+</script></body></html>
